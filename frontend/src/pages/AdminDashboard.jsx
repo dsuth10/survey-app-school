@@ -1281,19 +1281,19 @@ export default function AdminDashboard() {
       </main>
 
       {/* Add User Modal */}
-      <Modal isOpen={addUserModal.isOpen} onOpenChange={addUserModal.onOpenChange}>
+      <Modal isOpen={addUserModal.isOpen} onOpenChange={addUserModal.onOpenChange} scrollBehavior="inside">
         <ModalContent>
           <ModalHeader>Add user</ModalHeader>
           <ModalBody>
             <Input label="Username" value={formUser.username} onValueChange={(v) => setFormUser((p) => ({ ...p, username: v }))} isRequired />
             <Input label="Password" type="password" value={formUser.password} onValueChange={(v) => setFormUser((p) => ({ ...p, password: v }))} isRequired />
             <Input label="Display name" value={formUser.displayName} onValueChange={(v) => setFormUser((p) => ({ ...p, displayName: v }))} />
-            <Select label="Role" selectedKeys={[formUser.role]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? "student" }))}>
+            <Select label="Role" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} selectedKeys={[formUser.role]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? "student" }))}>
               {ROLES.map((r) => (
                 <SelectItem key={r}>{r}</SelectItem>
               ))}
             </Select>
-            <Select label="Class" placeholder="None" selectedKeys={formUser.classId ? [String(formUser.classId)] : ["none"]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, classId: Array.from(keys)[0] === "none" ? "" : Array.from(keys)[0] }))}>
+            <Select label="Class" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} placeholder="None" selectedKeys={formUser.classId ? [String(formUser.classId)] : ["none"]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, classId: Array.from(keys)[0] === "none" ? "" : Array.from(keys)[0] }))}>
               <SelectItem key="none">None</SelectItem>
               {classes.map((c) => (
                 <SelectItem key={String(c.id)}>{c.name}</SelectItem>
@@ -1309,19 +1309,19 @@ export default function AdminDashboard() {
       </Modal>
 
       {/* Edit User Modal */}
-      <Modal isOpen={editUserModal.isOpen} onOpenChange={editUserModal.onOpenChange}>
+      <Modal isOpen={editUserModal.isOpen} onOpenChange={editUserModal.onOpenChange} scrollBehavior="inside">
         <ModalContent>
           <ModalHeader>Edit user</ModalHeader>
           <ModalBody>
             <Input label="Username" value={formUser.username} isReadOnly />
             <Input label="New password (leave blank to keep)" type="password" value={formUser.password} onValueChange={(v) => setFormUser((p) => ({ ...p, password: v }))} />
             <Input label="Display name" value={formUser.displayName} onValueChange={(v) => setFormUser((p) => ({ ...p, displayName: v }))} />
-            <Select label="Role" selectedKeys={[formUser.role]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? "student" }))}>
+            <Select label="Role" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} selectedKeys={[formUser.role]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? "student" }))}>
               {ROLES.map((r) => (
                 <SelectItem key={r}>{r}</SelectItem>
               ))}
             </Select>
-            <Select label="Class" placeholder="None" selectedKeys={formUser.classId ? [String(formUser.classId)] : ["none"]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, classId: Array.from(keys)[0] === "none" ? "" : Array.from(keys)[0] }))}>
+            <Select label="Class" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} placeholder="None" selectedKeys={formUser.classId ? [String(formUser.classId)] : ["none"]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, classId: Array.from(keys)[0] === "none" ? "" : Array.from(keys)[0] }))}>
               <SelectItem key="none">None</SelectItem>
               {classes.map((c) => (
                 <SelectItem key={String(c.id)}>{c.name}</SelectItem>

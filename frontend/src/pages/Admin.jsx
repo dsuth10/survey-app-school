@@ -528,7 +528,7 @@ export default function Admin() {
       </Tabs>
 
       {/* Add User Modal */}
-      <Modal isOpen={addModal.isOpen} onOpenChange={addModal.onOpenChange}>
+      <Modal isOpen={addModal.isOpen} onOpenChange={addModal.onOpenChange} scrollBehavior="inside">
         <ModalContent>
           <ModalHeader>Add user</ModalHeader>
           <ModalBody>
@@ -537,6 +537,7 @@ export default function Admin() {
             <Input label="Display name" value={formUser.displayName} onValueChange={(v) => setFormUser((p) => ({ ...p, displayName: v }))} />
             <Select
               label="Role"
+              popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }}
               selectedKeys={[formUser.role]}
               onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? 'student' }))}
             >
@@ -546,6 +547,7 @@ export default function Admin() {
             </Select>
             <Select
               label="Class"
+              popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }}
               placeholder="None"
               selectedKeys={formUser.classId ? [String(formUser.classId)] : ['none']}
               onSelectionChange={(keys) => { const k = Array.from(keys)[0]; setFormUser((p) => ({ ...p, classId: k === 'none' || !k ? '' : k })); }}
@@ -565,7 +567,7 @@ export default function Admin() {
       </Modal>
 
       {/* Edit User Modal */}
-      <Modal isOpen={editModal.isOpen} onOpenChange={editModal.onOpenChange}>
+      <Modal isOpen={editModal.isOpen} onOpenChange={editModal.onOpenChange} scrollBehavior="inside">
         <ModalContent>
           <ModalHeader>Edit user</ModalHeader>
           <ModalBody>
@@ -574,6 +576,7 @@ export default function Admin() {
             <Input label="Display name" value={formUser.displayName} onValueChange={(v) => setFormUser((p) => ({ ...p, displayName: v }))} />
             <Select
               label="Role"
+              popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }}
               selectedKeys={[formUser.role]}
               onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? 'student' }))}
             >
@@ -583,6 +586,7 @@ export default function Admin() {
             </Select>
             <Select
               label="Class"
+              popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }}
               placeholder="None"
               selectedKeys={formUser.classId ? [String(formUser.classId)] : ['none']}
               onSelectionChange={(keys) => { const k = Array.from(keys)[0]; setFormUser((p) => ({ ...p, classId: k === 'none' || !k ? '' : k })); }}
