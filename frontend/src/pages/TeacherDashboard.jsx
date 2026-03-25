@@ -12,26 +12,27 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
+  const fetchTeacherData = async () => {
+    setLoading(true);
+    try {
+      const [classesRes, surveysRes, statsRes] = await Promise.all([
+        axios.get("/api/classes"),
+        axios.get("/api/surveys"),
+        axios.get("/api/surveys/teacher-stats"),
+      ]);
+      setClasses(Array.isArray(classesRes.data) ? classesRes.data : []);
+      const surveyList = Array.isArray(surveysRes.data) ? surveysRes.data : [];
+      setSurveys(surveyList.filter((s) => s.creatorId === user?.id));
+      setRecentActivity(statsRes.data.recentActivity || []);
+    } catch (err) {
+      console.error("Failed to load teacher data", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const [classesRes, surveysRes, statsRes] = await Promise.all([
-          axios.get("/api/classes"),
-          axios.get("/api/surveys"),
-          axios.get("/api/surveys/teacher-stats"),
-        ]);
-        setClasses(Array.isArray(classesRes.data) ? classesRes.data : []);
-        const surveyList = Array.isArray(surveysRes.data) ? surveysRes.data : [];
-        setSurveys(surveyList.filter((s) => s.creatorId === user?.id));
-        setRecentActivity(statsRes.data.recentActivity || []);
-      } catch (err) {
-        console.error("Failed to load teacher data", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (user?.id) load();
+    if (user?.id) fetchTeacherData();
   }, [user?.id]);
 
   const mySurveys = surveys.filter((s) => s.creatorId === user?.id);
@@ -49,7 +50,7 @@ export default function TeacherDashboard() {
   const handleCreateSurvey = () => navigate("/create");
   const handleManageClass = () => navigate("/manage-class");
   const handleSeeAllClasses = () => navigate("/manage-class");
-  const handleBrowse = () => navigate("/browse");
+  const handleBrowse = () => navigate("/analytics");
 
   const displayName = user?.displayName || user?.username || "Teacher";
   const firstName = displayName.split(/\s+/)[0] || displayName;
@@ -102,15 +103,6 @@ export default function TeacherDashboard() {
             <span className="material-symbols-outlined">analytics</span>
             <span className="text-sm">Results &amp; Analytics</span>
           </button>
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-3 mt-8 mb-2">Support</div>
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition-colors text-left">
-            <span className="material-symbols-outlined">library_books</span>
-            <span className="text-sm">Resources</span>
-          </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition-colors text-left">
-            <span className="material-symbols-outlined">settings</span>
-            <span className="text-sm">Settings</span>
-          </button>
         </nav>
         <div className="p-4 border-t border-slate-200 dark:border-slate-800">
           <button
@@ -138,10 +130,6 @@ export default function TeacherDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <button type="button" className="relative p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <div className="h-8 w-px bg-slate-200 dark:border-slate-800" />
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <p className="text-sm font-bold leading-tight">{displayName}</p>
@@ -178,7 +166,6 @@ export default function TeacherDashboard() {
                 <div className="bg-blue-50 dark:bg-blue-900/30 text-primary p-2 rounded-lg">
                   <span className="material-symbols-outlined">groups</span>
                 </div>
-                <span className="text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">—</span>
               </div>
               <p className="text-slate-500 text-sm font-medium">Total Students</p>
               <h3 className="text-2xl font-black mt-1">{loading ? "—" : totalStudents}</h3>
@@ -188,7 +175,6 @@ export default function TeacherDashboard() {
                 <div className="bg-primary/10 text-primary p-2 rounded-lg">
                   <span className="material-symbols-outlined">assignment</span>
                 </div>
-                <span className="text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">—</span>
               </div>
               <p className="text-slate-500 text-sm font-medium">Active Surveys</p>
               <h3 className="text-2xl font-black mt-1">{loading ? "—" : activeSurveys.length}</h3>
@@ -198,7 +184,6 @@ export default function TeacherDashboard() {
                 <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 p-2 rounded-lg">
                   <span className="material-symbols-outlined">check_circle</span>
                 </div>
-                <span className="text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">—</span>
               </div>
               <p className="text-slate-500 text-sm font-medium">Completion Rate</p>
               <h3 className="text-2xl font-black mt-1">{loading ? "—" : (avgCompletionRate != null ? `${avgCompletionRate}%` : "—")}</h3>
@@ -208,7 +193,6 @@ export default function TeacherDashboard() {
                 <div className="bg-amber-50 dark:bg-amber-900/30 text-amber-600 p-2 rounded-lg">
                   <span className="material-symbols-outlined">rate_review</span>
                 </div>
-                <span className="text-xs font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/30 px-2 py-0.5 rounded-full">—</span>
               </div>
               <p className="text-slate-500 text-sm font-medium">Recent Submissions</p>
               <h3 className="text-2xl font-black mt-1">{loading ? "—" : recentActivity.length}</h3>
@@ -257,9 +241,6 @@ export default function TeacherDashboard() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold">Recent Surveys</h2>
-                  <button type="button" className="text-slate-500 hover:text-slate-900 dark:hover:text-white p-1">
-                    <span className="material-symbols-outlined">more_horiz</span>
-                  </button>
                 </div>
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                   <table className="w-full text-left border-collapse">
@@ -331,7 +312,7 @@ export default function TeacherDashboard() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold">Student Activity</h2>
-                  <button type="button" className="p-1 rounded bg-slate-50 dark:bg-slate-800 text-slate-400">
+                  <button type="button" onClick={fetchTeacherData} className="p-1 rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary transition-colors">
                     <span className="material-symbols-outlined text-sm">refresh</span>
                   </button>
                 </div>
@@ -361,23 +342,10 @@ export default function TeacherDashboard() {
                       </div>
                     )}
                   </div>
-                  <button type="button" className="w-full mt-8 py-2 text-xs font-bold text-slate-500 hover:text-primary transition-colors border-t border-slate-100 dark:border-slate-800 pt-4">
+                  <button type="button" onClick={handleBrowse} className="w-full mt-8 py-2 text-xs font-bold text-slate-500 hover:text-primary transition-colors border-t border-slate-100 dark:border-slate-800 pt-4">
                     View All Activity History
                   </button>
                 </div>
-              </section>
-
-              <section className="bg-primary/5 dark:bg-primary/10 rounded-xl p-5 border border-primary/10">
-                <h4 className="text-sm font-bold text-primary mb-2 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">lightbulb</span>
-                  Did you know?
-                </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Surveys with 5 questions or fewer have an 85% higher completion rate among senior high students.
-                </p>
-                <button type="button" className="mt-4 text-[10px] font-bold uppercase tracking-widest text-primary hover:underline">
-                  Learn more
-                </button>
               </section>
             </div>
           </div>

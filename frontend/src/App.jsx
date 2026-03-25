@@ -10,6 +10,7 @@ import ResultsDashboard from './pages/ResultsDashboard';
 import ManageClass from './pages/ManageClass';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
+import AnalyticsPage from './pages/AnalyticsPage';
 import MainLayout from './components/MainLayout';
 
 const ProtectedRoute = ({ children, noLayout }) => {
@@ -86,6 +87,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Admin />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/analytics" 
+              element={
+                <ProtectedRoute>
+                  <AnalyticsPage />
                 </ProtectedRoute>
               } 
             />

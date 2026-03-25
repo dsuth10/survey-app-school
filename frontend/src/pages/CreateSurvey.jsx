@@ -266,7 +266,7 @@ export default function CreateSurvey() {
               Dashboard
             </button>
             <span className="text-primary text-sm font-semibold border-b-2 border-primary py-5">Editor</span>
-            <button type="button" onClick={() => navigate("/browse")} className="text-slate-500 hover:text-primary text-sm font-medium transition-colors">
+            <button type="button" onClick={() => navigate("/analytics")} className="text-slate-500 hover:text-primary text-sm font-medium transition-colors">
               Analytics
             </button>
           </nav>

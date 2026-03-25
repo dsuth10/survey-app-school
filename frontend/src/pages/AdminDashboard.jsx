@@ -112,6 +112,13 @@ export default function AdminDashboard() {
     yearLevel: "",
     activeOnly: false,
   });
+  const [overviewStats, setOverviewStats] = useState({ 
+    totalStudents: 0, 
+    activeSurveys: 0, 
+    pendingResponses: 0, 
+    recentActivity: [] 
+  });
+  const [surveyAnalytics, setSurveyAnalytics] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const perPage = 25;
@@ -235,10 +242,23 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchAnalytics = async () => {
+    try {
+      const [overviewRes, surveysRes] = await Promise.all([
+        axios.get("/api/analytics/overview"),
+        axios.get("/api/analytics/surveys"),
+      ]);
+      setOverviewStats(overviewRes.data);
+      setSurveyAnalytics(surveysRes.data);
+    } catch (err) {
+      console.error("Failed to fetch admin analytics", err);
+    }
+  };
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      await Promise.all([fetchUsers(), fetchClasses(), fetchSurveys(), fetchTeachers()]);
+      await Promise.all([fetchUsers(), fetchClasses(), fetchSurveys(), fetchTeachers(), fetchAnalytics()]);
       setLoading(false);
     };
     load();
@@ -707,13 +727,6 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button type="button" className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900" />
-            </button>
-            <button type="button" className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-              <span className="material-symbols-outlined">settings</span>
-            </button>
           </div>
         </header>
 
@@ -729,9 +742,6 @@ export default function AdminDashboard() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
               <div className="flex justify-between items-start mb-4">
                 <span className="material-symbols-outlined p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg">person</span>
-                <span className="text-green-600 text-xs font-bold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">trending_up</span>—
-                </span>
               </div>
               <p className="text-slate-500 text-sm font-medium">Total Users</p>
               <p className="text-3xl font-bold mt-1">{loading ? "—" : totalUsers}</p>
@@ -739,9 +749,6 @@ export default function AdminDashboard() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
               <div className="flex justify-between items-start mb-4">
                 <span className="material-symbols-outlined p-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 rounded-lg">assignment_turned_in</span>
-                <span className="text-green-600 text-xs font-bold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">trending_up</span>—
-                </span>
               </div>
               <p className="text-slate-500 text-sm font-medium">Active Surveys</p>
               <p className="text-3xl font-bold mt-1">{loading ? "—" : activeSurveys.length}</p>
@@ -749,9 +756,6 @@ export default function AdminDashboard() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
               <div className="flex justify-between items-start mb-4">
                 <span className="material-symbols-outlined p-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg">school</span>
-                <span className="text-red-600 text-xs font-bold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">trending_down</span>—
-                </span>
               </div>
               <p className="text-slate-500 text-sm font-medium">Classes</p>
               <p className="text-3xl font-bold mt-1">{loading ? "—" : classes.length}</p>
@@ -759,12 +763,9 @@ export default function AdminDashboard() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
               <div className="flex justify-between items-start mb-4">
                 <span className="material-symbols-outlined p-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-lg">pending_actions</span>
-                <span className="text-green-600 text-xs font-bold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">trending_up</span>—
-                </span>
               </div>
               <p className="text-slate-500 text-sm font-medium">Pending Responses</p>
-              <p className="text-3xl font-bold mt-1">—</p>
+              <p className="text-3xl font-bold mt-1">{loading ? "—" : overviewStats.pendingResponses}</p>
             </div>
           </div>
 
@@ -1237,37 +1238,58 @@ export default function AdminDashboard() {
               <section className="space-y-4">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider px-2">Recent Activity</h3>
                 <div className="space-y-4 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100 dark:before:bg-slate-800 pl-2">
-                  <div className="relative flex gap-4">
-                    <div className="size-9 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center z-10 shrink-0">
-                      <span className="material-symbols-outlined text-[18px] text-blue-600">post_add</span>
+                  {loading ? (
+                    <p className="text-xs text-slate-500 px-8">Loading...</p>
+                  ) : overviewStats.recentActivity.length > 0 ? (
+                    overviewStats.recentActivity.map((act, i) => (
+                      <div key={i} className="relative flex gap-4">
+                        <div className="size-9 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center z-10 shrink-0">
+                          <span className="material-symbols-outlined text-[18px] text-blue-600">task_alt</span>
+                        </div>
+                        <div className="flex-1 min-w-0 pt-1">
+                          <p className="text-sm font-medium leading-snug truncate">{act.studentName}</p>
+                          <p className="text-[10px] text-slate-500 truncate">responded to {act.surveyTitle}</p>
+                          <p className="text-[9px] text-slate-400 mt-1">{new Date(act.submittedAt).toLocaleTimeString()}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="relative flex gap-4">
+                      <div className="size-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center z-10 shrink-0">
+                        <span className="material-symbols-outlined text-[18px] text-slate-400">history</span>
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <p className="text-sm font-medium leading-snug">No recent activity</p>
+                      </div>
                     </div>
-                    <div className="flex-1 pt-1">
-                      <p className="text-sm font-medium leading-snug">Survey activity appears here.</p>
-                      <p className="text-xs text-slate-500 mt-1">—</p>
-                    </div>
-                  </div>
+                  )}
                 </div>
-                <button type="button" className="w-full text-center text-xs font-bold text-primary hover:underline py-2">View All Activity</button>
+                <button type="button" onClick={() => navigate("/analytics")} className="w-full text-center text-xs font-bold text-primary hover:underline py-2">View All Activity</button>
               </section>
 
               <section className="bg-slate-900 dark:bg-slate-800 text-white p-6 rounded-xl overflow-hidden relative">
                 <div className="relative z-10">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Survey Status</h3>
                   <div className="space-y-4">
-                    {surveyStatusList.length === 0 ? (
+                    {loading ? (
+                      <p className="text-sm text-slate-400">Loading...</p>
+                    ) : surveyAnalytics.length === 0 ? (
                       <p className="text-sm text-slate-400">No surveys</p>
                     ) : (
-                      surveyStatusList.slice(0, 3).map((s) => (
-                        <div key={s.id}>
-                          <div className="flex justify-between text-xs font-medium mb-1">
-                            <span className="truncate pr-2">{s.title}</span>
-                            <span>{s.closedAt ? "Closed" : "Open"}</span>
+                      surveyAnalytics.slice(0, 3).map((s) => {
+                        const completion = Math.round((s.completion.responded / Math.max(1, s.completion.total)) * 100);
+                        return (
+                          <div key={s.id}>
+                            <div className="flex justify-between text-xs font-medium mb-1">
+                              <span className="truncate pr-2">{s.title}</span>
+                              <span>{completion}%</span>
+                            </div>
+                            <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                              <div className="h-full bg-primary" style={{ width: `${completion}%` }} />
+                            </div>
                           </div>
-                          <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                            <div className="h-full bg-primary w-[50%]" />
-                          </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>

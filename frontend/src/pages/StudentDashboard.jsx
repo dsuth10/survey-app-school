@@ -111,10 +111,6 @@ export default function StudentDashboard() {
             />
           </div>
           <div className="flex items-center gap-4">
-            <button type="button" className="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <div className="h-8 w-px bg-slate-200 dark:border-slate-800 mx-2" />
             <div className="flex items-center gap-3 cursor-pointer group">
               <div className="text-right">
                 <p className="text-sm font-semibold leading-none group-hover:text-primary transition-colors">{displayName}</p>
@@ -135,13 +131,6 @@ export default function StudentDashboard() {
                 You have {pendingSurveys.length} survey{pendingSurveys.length !== 1 ? "s" : ""} waiting for your feedback today.
               </p>
             </div>
-            <div className="flex items-center gap-3 bg-primary/5 dark:bg-primary/10 px-4 py-2 rounded-lg border border-primary/10">
-              <span className="material-symbols-outlined text-primary">stars</span>
-              <div>
-                <p className="text-[10px] font-bold text-primary uppercase tracking-wider leading-none">Your Rank</p>
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Participant</p>
-              </div>
-            </div>
           </section>
 
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -149,9 +138,6 @@ export default function StudentDashboard() {
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Completed</p>
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-bold">{loading ? "—" : completedSurveys.length}</span>
-                <span className="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                  <span className="material-symbols-outlined text-xs">trending_up</span> —
-                </span>
               </div>
             </div>
             <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -271,64 +257,32 @@ export default function StudentDashboard() {
             </section>
           )}
 
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-              <h3 className="text-lg font-bold">Recent Activity</h3>
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {loading ? (
-                    <div className="p-4 text-slate-500">Loading…</div>
-                  ) : completedSurveys.length === 0 ? (
-                    <div className="p-4 text-slate-500">No completed surveys yet.</div>
-                  ) : (
-                    completedSurveys.slice(0, 5).map((s) => (
-                      <div key={s.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
-                            <span className="material-symbols-outlined">check_circle</span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold">{s.title}</p>
-                            <p className="text-xs text-slate-500">Completed</p>
-                          </div>
+          <section>
+            <h3 className="text-lg font-bold mb-4">Recent Activity</h3>
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {loading ? (
+                  <div className="p-4 text-slate-500">Loading…</div>
+                ) : completedSurveys.length === 0 ? (
+                  <div className="p-4 text-slate-500">No completed surveys yet.</div>
+                ) : (
+                  completedSurveys.slice(0, 5).map((s) => (
+                    <div key={s.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+                          <span className="material-symbols-outlined">check_circle</span>
                         </div>
-                        <button type="button" onClick={handleViewAll} className="p-2 text-slate-400 hover:text-primary transition-colors" aria-label="View surveys">
-                          <span className="material-symbols-outlined text-lg">chevron_right</span>
-                        </button>
+                        <div>
+                          <p className="text-sm font-semibold">{s.title}</p>
+                          <p className="text-xs text-slate-500">Completed</p>
+                        </div>
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold">Your Progress</h3>
-              <div className="bg-primary rounded-xl p-6 text-white relative overflow-hidden shadow-xl shadow-primary/30">
-                <div className="absolute top-0 right-0 p-4 opacity-20">
-                  <span className="material-symbols-outlined text-6xl">insights</span>
-                </div>
-                <p className="text-sm font-medium opacity-90">Current Goal</p>
-                <h4 className="text-xl font-bold mt-1">Weekly Challenge</h4>
-                <p className="text-xs mt-4 opacity-80">Complete surveys to track your progress</p>
-                <div className="mt-4 bg-white/20 h-2 rounded-full overflow-hidden">
-                  <div className="bg-white h-full rounded-full" style={{ width: `${Math.min(100, (completedSurveys.length / 5) * 100)}%` }} />
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-xs font-bold">{completedSurveys.length} completed</span>
-                </div>
-                <button type="button" onClick={handleViewAll} className="w-full mt-6 bg-white text-primary py-2 rounded-lg font-bold text-sm hover:bg-slate-50 transition-colors">
-                  View Milestones
-                </button>
-              </div>
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-yellow-400/20 rounded-full flex items-center justify-center">
-                  <span className="material-symbols-outlined text-yellow-500">emoji_events</span>
-                </div>
-                <div>
-                  <p className="text-sm font-bold">Redeem Points</p>
-                  <p className="text-xs text-slate-500">Complete more surveys to earn rewards</p>
-                </div>
+                      <button type="button" onClick={handleViewAll} className="p-2 text-slate-400 hover:text-primary transition-colors" aria-label="View surveys">
+                        <span className="material-symbols-outlined text-lg">chevron_right</span>
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </section>
