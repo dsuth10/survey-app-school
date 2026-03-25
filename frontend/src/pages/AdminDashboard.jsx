@@ -408,7 +408,7 @@ export default function AdminDashboard() {
       if (formUser.password) payload.password = formUser.password;
       await axios.put(`/api/admin/users/${editUserId}`, payload);
       editUserModal.onClose();
-      await fetchUsers();
+      await Promise.all([fetchUsers(), fetchClasses(), fetchTeachers()]);
       setMessage({ type: "success", text: "User updated" });
     } catch (err) {
       setMessage({ type: "error", text: err.response?.data?.error || "Failed to update user" });
@@ -1285,21 +1285,21 @@ export default function AdminDashboard() {
         <ModalContent>
           <ModalHeader>Add user</ModalHeader>
           <ModalBody>
-            <Input label="Username" value={formUser.username} onValueChange={(v) => setFormUser((p) => ({ ...p, username: v }))} isRequired />
-            <Input label="Password" type="password" value={formUser.password} onValueChange={(v) => setFormUser((p) => ({ ...p, password: v }))} isRequired />
-            <Input label="Display name" value={formUser.displayName} onValueChange={(v) => setFormUser((p) => ({ ...p, displayName: v }))} />
-            <Select label="Role" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} selectedKeys={[formUser.role]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? "student" }))}>
+            <Input label="Username" labelPlacement="outside" variant="bordered" placeholder="Enter username" value={formUser.username} onValueChange={(v) => setFormUser((p) => ({ ...p, username: v }))} isRequired />
+            <Input label="Password" labelPlacement="outside" variant="bordered" placeholder="Enter password" type="password" value={formUser.password} onValueChange={(v) => setFormUser((p) => ({ ...p, password: v }))} isRequired />
+            <Input label="Display name" labelPlacement="outside" variant="bordered" placeholder="Enter display name" value={formUser.displayName} onValueChange={(v) => setFormUser((p) => ({ ...p, displayName: v }))} />
+            <Select label="Role" labelPlacement="outside" variant="bordered" placeholder="Select role" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} selectedKeys={[formUser.role]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? "student" }))}>
               {ROLES.map((r) => (
                 <SelectItem key={r}>{r}</SelectItem>
               ))}
             </Select>
-            <Select label="Class" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} placeholder="None" selectedKeys={formUser.classId ? [String(formUser.classId)] : ["none"]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, classId: Array.from(keys)[0] === "none" ? "" : Array.from(keys)[0] }))}>
+            <Select label="Class" labelPlacement="outside" variant="bordered" placeholder="None" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} selectedKeys={formUser.classId ? [String(formUser.classId)] : ["none"]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, classId: Array.from(keys)[0] === "none" ? "" : Array.from(keys)[0] }))}>
               <SelectItem key="none">None</SelectItem>
               {classes.map((c) => (
                 <SelectItem key={String(c.id)}>{c.name}</SelectItem>
               ))}
             </Select>
-            <Input label="Year level" value={formUser.yearLevel} onValueChange={(v) => setFormUser((p) => ({ ...p, yearLevel: v }))} />
+            <Input label="Year level" labelPlacement="outside" variant="bordered" placeholder="e.g. Year 5" value={formUser.yearLevel} onValueChange={(v) => setFormUser((p) => ({ ...p, yearLevel: v }))} />
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={addUserModal.onClose}>Cancel</Button>
@@ -1313,21 +1313,21 @@ export default function AdminDashboard() {
         <ModalContent>
           <ModalHeader>Edit user</ModalHeader>
           <ModalBody>
-            <Input label="Username" value={formUser.username} isReadOnly />
-            <Input label="New password (leave blank to keep)" type="password" value={formUser.password} onValueChange={(v) => setFormUser((p) => ({ ...p, password: v }))} />
-            <Input label="Display name" value={formUser.displayName} onValueChange={(v) => setFormUser((p) => ({ ...p, displayName: v }))} />
-            <Select label="Role" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} selectedKeys={[formUser.role]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? "student" }))}>
+            <Input label="Username" labelPlacement="outside" variant="bordered" value={formUser.username} isReadOnly />
+            <Input label="New password (leave blank to keep)" labelPlacement="outside" variant="bordered" placeholder="Leave blank to keep current password" type="password" value={formUser.password} onValueChange={(v) => setFormUser((p) => ({ ...p, password: v }))} />
+            <Input label="Display name" labelPlacement="outside" variant="bordered" placeholder="Enter display name" value={formUser.displayName} onValueChange={(v) => setFormUser((p) => ({ ...p, displayName: v }))} />
+            <Select label="Role" labelPlacement="outside" variant="bordered" placeholder="Select role" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} selectedKeys={[formUser.role]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, role: Array.from(keys)[0] ?? "student" }))}>
               {ROLES.map((r) => (
                 <SelectItem key={r}>{r}</SelectItem>
               ))}
             </Select>
-            <Select label="Class" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} placeholder="None" selectedKeys={formUser.classId ? [String(formUser.classId)] : ["none"]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, classId: Array.from(keys)[0] === "none" ? "" : Array.from(keys)[0] }))}>
+            <Select label="Class" labelPlacement="outside" variant="bordered" placeholder="None" popoverProps={{ className: "z-[1000]", style: { zIndex: 1000 } }} selectedKeys={formUser.classId ? [String(formUser.classId)] : ["none"]} onSelectionChange={(keys) => setFormUser((p) => ({ ...p, classId: Array.from(keys)[0] === "none" ? "" : Array.from(keys)[0] }))}>
               <SelectItem key="none">None</SelectItem>
               {classes.map((c) => (
                 <SelectItem key={String(c.id)}>{c.name}</SelectItem>
               ))}
             </Select>
-            <Input label="Year level" value={formUser.yearLevel} onValueChange={(v) => setFormUser((p) => ({ ...p, yearLevel: v }))} />
+            <Input label="Year level" labelPlacement="outside" variant="bordered" placeholder="e.g. Year 5" value={formUser.yearLevel} onValueChange={(v) => setFormUser((p) => ({ ...p, yearLevel: v }))} />
             <div className="flex items-center gap-2">
               <input type="checkbox" id="edit-active" checked={formUser.isActive} onChange={(e) => setFormUser((p) => ({ ...p, isActive: e.target.checked }))} />
               <label htmlFor="edit-active">Active</label>
