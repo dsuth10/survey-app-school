@@ -90,7 +90,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [importing, setImporting] = useState(false);
+  const [downloadingExample, setDownloadingExample] = useState(false);
 
+  // Modals
   const addUserModal = useDisclosure();
   const editUserModal = useDisclosure();
   const importModal = useDisclosure();
@@ -111,7 +114,6 @@ export default function AdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [importResult, setImportResult] = useState(null);
-  const [importing, setImporting] = useState(false);
 
   const [classForm, setClassForm] = useState({ name: "", teacherId: "none" });
   const [editClassId, setEditClassId] = useState(null);
@@ -123,6 +125,26 @@ export default function AdminDashboard() {
   const students = users.filter((u) => u.role === "student");
   // teachers comes from a dedicated fetch so it's always complete regardless of pagination
   const teachers = allTeachers;
+
+  const handleDownloadExample = async () => {
+    setDownloadingExample(true);
+    try {
+      const resp = await axios.get('/example-users.csv', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([resp.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'example-users.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed:', err);
+      setMessage({ type: 'error', text: 'Failed to download example CSV' });
+    } finally {
+      setDownloadingExample(false);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -925,14 +947,15 @@ export default function AdminDashboard() {
             <div className="rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Required CSV columns</p>
-                <a
-                  href="/example-users.csv"
-                  download="example-users.csv"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+                <button
+                  type="button"
+                  onClick={handleDownloadExample}
+                  disabled={downloadingExample}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline bg-transparent border-none p-0 cursor-pointer disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-[16px]">download</span>
-                  Download example CSV
-                </a>
+                  {downloadingExample ? 'Downloading...' : 'Download example CSV'}
+                </button>
               </div>
               <table className="w-full text-xs border-collapse">
                 <thead>
