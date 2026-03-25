@@ -1,0 +1,28 @@
+# Survey app – login reference
+
+## Accounts (password for all: `password123`)
+
+| Role     | Username  | Display name   | Details                          |
+|----------|-----------|----------------|----------------------------------|
+| Admin    | admin     | Administrator  | Full access                      |
+| Teacher 1| teacher1  | Mr. Smith      | Owns **Class 7A**                |
+| Teacher 2| teacher2  | Ms. Jones      | Owns **Class 8B**                |
+| Student  | student1  | John Doe       | In **Class 7A**                  |
+
+## Who sees what
+
+| User     | Sees                                      |
+|----------|-------------------------------------------|
+| teacher1 | Class 7A only (and student1)              |
+| teacher2 | Class 8B only (no students in that class) |
+| student1 | Can log in; in Class 7A                   |
+
+## Reseed database
+
+To reset and reload this dummy data:
+
+```bash
+cd Survey/backend && node src/db/seed.js
+```
+
+The seed drops and recreates tables, so the schema (including the admin role) stays up to date.

@@ -1,0 +1,26 @@
+{
+  "name": "survey",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "start": "npm start --prefix backend",
+    "serve:lan": "npm run build --prefix frontend && npm run start:lan --prefix backend",
+    "classroom": "npm run build --prefix frontend && npm run start:prod --prefix backend",
+    "test": "concurrently \"npm test --prefix backend\" \"npm test --prefix frontend\"",
+    "lint": "concurrently \"npm run lint --prefix backend\" \"npm run lint --prefix frontend\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.0.0",
+    "prettier": "^3.7.4"
+  }
+}

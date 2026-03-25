@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Production / build
+dist/
+build/
+*.local
+
+# Database
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+
+# Cursor / agent (optional: remove these lines to track them)
+.agent/
+.cursor/
+mcps/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

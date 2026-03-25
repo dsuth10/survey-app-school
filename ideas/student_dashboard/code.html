@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Survey Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f49bd",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary rounded-lg p-1.5 text-white">
+<span class="material-symbols-outlined block">insights</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">SurveyFlow</h1>
+</div>
+<nav class="flex-1 px-4 space-y-1 mt-4">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-semibold" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span>My Surveys</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span>Results</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Support</p>
+<a class="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">help_center</span>
+<span>Help Center</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto">
+<!-- Top Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 px-8 flex items-center justify-between">
+<div class="flex-1 max-w-md relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-slate-500" placeholder="Search surveys, results..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:border-slate-800 mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="text-sm font-semibold leading-none group-hover:text-primary transition-colors">Alex Johnson</p>
+<p class="text-xs text-slate-500 mt-1 leading-none">Student ID: 202409</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-transparent group-hover:border-primary transition-all">
+<img class="w-full h-full object-cover" data-alt="Portrait of Alex Johnson" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9VLDB0U5UkUeVccE9KTKnLSvueogW9fp_ddw_d83X5HbAPI0fjK-a64Tqzxhpxd_FEv0KYUhdGaE3BqwLzssMAvHnD0ctknha1AykL9SMlnySsb3VY6fwy2fPGlTUAhoBP6iFuIQWF3oQC8IGCdzrOs5ilYPaS0WcMBs9WcYMIgNnfRaxiILrzy_XvxsVRK5ZQS3PuKnLc0t2c0-IQkepDMOM4JToBqI12iYeMXeFnepIr17eWyXVK7WqAEW_HYHsdd9ZmOk1MbP-"/>
+</div>
+</div>
+</div>
+</header>
+<div class="p-8 max-w-7xl mx-auto space-y-8">
+<!-- Welcome Section -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="text-3xl font-bold tracking-tight">Hello, Alex!</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-1">You have 3 surveys waiting for your feedback today.</p>
+</div>
+<div class="flex items-center gap-3 bg-primary/5 dark:bg-primary/10 px-4 py-2 rounded-lg border border-primary/10">
+<span class="material-symbols-outlined text-primary">stars</span>
+<div>
+<p class="text-[10px] font-bold text-primary uppercase tracking-wider leading-none">Your Rank</p>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Gold Participant</p>
+</div>
+</div>
+</section>
+<!-- Stats Ribbon -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Completed</p>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="text-2xl font-bold">24</span>
+<span class="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded flex items-center">
+<span class="material-symbols-outlined text-xs">trending_up</span> 12%
+                        </span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Pending Surveys</p>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="text-2xl font-bold">03</span>
+<span class="text-xs font-medium text-slate-400">Active tasks</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Points Earned</p>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="text-2xl font-bold">1,250</span>
+<span class="material-symbols-outlined text-yellow-500 text-lg">monetization_on</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Badges Won</p>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="text-2xl font-bold">08</span>
+<div class="flex -space-x-2 overflow-hidden ml-2">
+<div class="inline-block h-6 w-6 rounded-full bg-primary/20 border-2 border-white dark:border-slate-900 flex items-center justify-center">
+<span class="material-symbols-outlined text-xs">workspace_premium</span>
+</div>
+<div class="inline-block h-6 w-6 rounded-full bg-yellow-100 dark:bg-yellow-900/30 border-2 border-white dark:border-slate-900 flex items-center justify-center">
+<span class="material-symbols-outlined text-xs text-yellow-600">military_tech</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Assigned to Me -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold">Assigned to Me</h3>
+<a class="text-sm font-semibold text-primary hover:underline" href="#">View all tasks</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Survey Card 1 -->
+<div class="group bg-white dark:bg-slate-900 rounded-xl border-2 border-primary/20 shadow-sm overflow-hidden flex flex-col hover:border-primary transition-all">
+<div class="h-32 bg-slate-100 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
+<img class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" data-alt="University campus aerial view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjJnm3yqFx8asJz1Q72vXvixkca7aYGNGSGGYdIubV5Z1s7cpz8gY0iMdgPgqCOQCiGusESc399JX51XxRNoXAKpoxn9esIzGIte4fo5laDcULzDLdUZQc057GJE_g57UoyhJ2IQlQ69uBkWAUKAfj77rEpH2t1cLcQBgHcOf3VaG9-QsToFEBSKxQO3I0v_jaoC0v0czph8_aX3Cfx1hx9p8FTL4nHdJp6eiO2gsGYYMI7xJDZ0YczqmxXewmBbwWxWVqbrJtw2i3"/>
+<span class="absolute top-3 right-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Required</span>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h4 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Campus Life Quality 2024</h4>
+<div class="mt-2 space-y-2">
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>Due in 2 days (Oct 24, 2024)</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span>~5 minutes to complete</span>
+</div>
+</div>
+<button class="w-full mt-6 bg-primary text-white py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                                Take Survey
+                            </button>
+</div>
+</div>
+<!-- Survey Card 2 -->
+<div class="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+<div class="h-32 bg-slate-100 relative overflow-hidden">
+<img class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" data-alt="Graduation caps in the air" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg0JPr7TXnrutNiSJqoAvc5qB8PrRX08LIvRcGVRHHz-4FPZfeKh1YSxodG1C16-5Sre4xIgbpOHcKUhgo4P17_cP-hct7HZ0TtWOFjDPfDFtAFRDy445hSRLSQTCNKmLBXJdy7jdy4xEiBHUwcjnhtfTma0OFhzz-4QxPCxPexMLS00f32PnrmJZ2GZJXAlHyVZhAWqglIv3_ph8nBOj0CG2iSt-F6V_ZibzQH0Oaw9Jzx1tkZ6c80PQy0Dyl0f8N9sUzwnB48Ah-"/>
+<span class="absolute top-3 right-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Optional</span>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h4 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Student Housing Feedback</h4>
+<div class="mt-2 space-y-2">
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>Due in 5 days (Oct 27, 2024)</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span>~10 minutes to complete</span>
+</div>
+</div>
+<button class="w-full mt-6 bg-primary/10 text-primary py-2.5 rounded-lg font-bold text-sm hover:bg-primary/20 transition-all">
+                                Take Survey
+                            </button>
+</div>
+</div>
+<!-- Survey Card 3 -->
+<div class="group bg-white dark:bg-slate-900 rounded-xl border-2 border-primary/20 shadow-sm overflow-hidden flex flex-col hover:border-primary transition-all">
+<div class="h-32 bg-slate-100 relative overflow-hidden">
+<img class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" data-alt="Library bookshelves" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmOY_dZm5vMbNZR9F1vnNbbaRZV2SGlEtvaItr_2D0Wx48nR-SsZtSy2yn0DIzORBkvra8ZUHa_qJOWVci6P6Wbut0qi-CavrTrDk2jZ2tMzEP0cx6tMVYKuqjpH2DdBbpcXgmjpN-7D_iGBuV39d9GiArWkd5QNZ1nyzfN7gI-zYtGV1iRNT_9lwT8iZaMNoWUuw8KLSSuOzlYFxWhRBwYhVXu5Ky9UnnyS7M0Gutcnv_edI8f15W9sPEKc3AKF8PByGkAMboREyj"/>
+<span class="absolute top-3 right-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Required</span>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h4 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Library Resources Survey</h4>
+<div class="mt-2 space-y-2">
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm text-red-500">warning</span>
+<span class="text-red-500 font-semibold">Due tomorrow</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span>~3 minutes to complete</span>
+</div>
+</div>
+<button class="w-full mt-6 bg-primary text-white py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                                Take Survey
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Row: Recent Activity & Rewards -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Recent Activity -->
+<div class="lg:col-span-2 space-y-4">
+<h3 class="text-lg font-bold">Recent Activity</h3>
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<!-- Activity Item 1 -->
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="text-sm font-semibold">Cafeteria Satisfaction Poll</p>
+<p class="text-xs text-slate-500">Completed yesterday • +50 Points</p>
+</div>
+</div>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+<!-- Activity Item 2 -->
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<p class="text-sm font-semibold">IT Support Performance Survey</p>
+<p class="text-xs text-slate-500">Completed 3 days ago • +30 Points</p>
+</div>
+</div>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+<!-- Activity Item 3 -->
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined">workspace_premium</span>
+</div>
+<div>
+<p class="text-sm font-semibold">Unlocked: "Active Voice" Badge</p>
+<p class="text-xs text-slate-500">Achieved for completing 20 surveys</p>
+</div>
+</div>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Leaderboard / Progress -->
+<div class="space-y-4">
+<h3 class="text-lg font-bold">Your Progress</h3>
+<div class="bg-primary rounded-xl p-6 text-white relative overflow-hidden shadow-xl shadow-primary/30">
+<div class="absolute top-0 right-0 p-4 opacity-20">
+<span class="material-symbols-outlined text-6xl">insights</span>
+</div>
+<p class="text-sm font-medium opacity-90">Current Goal</p>
+<h4 class="text-xl font-bold mt-1">Weekly Challenge</h4>
+<p class="text-xs mt-4 opacity-80">Finish 5 surveys to earn a Gold Badge</p>
+<div class="mt-4 bg-white/20 h-2 rounded-full overflow-hidden">
+<div class="bg-white h-full rounded-full" style="width: 60%"></div>
+</div>
+<div class="flex justify-between items-center mt-2">
+<span class="text-xs font-bold">3/5 Done</span>
+<span class="text-xs font-bold">60%</span>
+</div>
+<button class="w-full mt-6 bg-white text-primary py-2 rounded-lg font-bold text-sm hover:bg-slate-50 transition-colors">
+                            View Milestones
+                        </button>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-4">
+<div class="w-12 h-12 bg-yellow-400/20 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-yellow-500">emoji_events</span>
+</div>
+<div>
+<p class="text-sm font-bold">Redeem Points</p>
+<p class="text-xs text-slate-500">You have enough for a $5 Coffee Voucher</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,8 @@
+username,displayName,role,class,yearLevel,password
+jsmith,Jane Smith,teacher,,7,password123
+mbrown,Mark Brown,teacher,,8,password123
+astudent1,Alice Student,student,7A,7,password123
+bstudent1,Bob Student,student,7A,7,password123
+cstudent1,Charlie Student,student,7B,7,password123
+dstudent1,David Student,student,8A,8,password123
+estudent1,Eve Student,student,8A,8,password123
