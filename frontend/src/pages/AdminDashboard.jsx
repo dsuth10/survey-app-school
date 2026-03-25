@@ -18,11 +18,21 @@ import { useAuth } from "../contexts/AuthContext";
 const ROLES = ["student", "teacher", "admin"];
 
 function parseCSV(text) {
-  const lines = text.trim().split(/\r?\n/);
+  // Remove BOM if present
+  const cleanText = text.replace(/^\uFEFF/, "");
+  const lines = cleanText.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
-  const header = lines[0].toLowerCase().replace(/\s/g, "").split(",");
+  
+  // Header parsing: normalize to lowercase and remove spaces
+  const header = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/\s/g, ""));
+  
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    
+    // Simple CSV parser that handles basic quoted values
+    // For a production app, a library like PapaParse would be better, 
+    // but for this specific use case we keep it simple.
     const values = lines[i].split(",").map((s) => s.trim().replace(/^"|"$/g, ""));
     const row = {};
     header.forEach((h, j) => {
@@ -34,7 +44,13 @@ function parseCSV(text) {
 }
 
 function mapCSVRowToUser(row) {
-  const get = (k) => (row[k] ?? row[k.replace(/\s/g, "")] ?? "").trim();
+  // Helper to get value regardless of exact header property name capitalization/spacing
+  const get = (k) => {
+    const key = k.toLowerCase().replace(/\s/g, "");
+    const val = row[key] ?? row[k] ?? '';
+    return val.trim();
+  };
+  
   return {
     username: get("username"),
     displayName: get("displayname") || get("displayName"),
