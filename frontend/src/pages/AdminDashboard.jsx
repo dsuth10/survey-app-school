@@ -105,6 +105,15 @@ export default function AdminDashboard() {
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    role: "",
+    classId: "",
+    yearLevel: "",
+    activeOnly: false,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 25;
   const [message, setMessage] = useState({ type: "", text: "" });
   const [importing, setImporting] = useState(false);
   const [downloadingExample, setDownloadingExample] = useState(false);
@@ -164,16 +173,33 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("/api/admin/users");
-      // Backend returns { users, total, page, limit } for paginated responses
-      const data = res.data;
-      if (Array.isArray(data)) {
-        setUsers(data);
-        setTotalUsers(data.length);
-      } else {
-        setUsers(Array.isArray(data.users) ? data.users : []);
-        setTotalUsers(data.total ?? 0);
+      const pageLimit = 1000;
+      // Use backend pagination to ensure "all users" even if dataset grows.
+      const firstRes = await axios.get(`/api/admin/users?limit=${pageLimit}`);
+      const firstData = firstRes.data ?? {};
+      const firstUsers = Array.isArray(firstData.users)
+        ? firstData.users
+        : Array.isArray(firstRes.data)
+          ? firstRes.data
+          : [];
+      const total = typeof firstData.total === "number" ? firstData.total : firstUsers.length;
+      const totalPages =
+        typeof firstData.totalPages === "number" && Number.isFinite(firstData.totalPages)
+          ? firstData.totalPages
+          : Math.max(1, Math.ceil(total / pageLimit));
+
+      const allUsers = [...firstUsers];
+      for (let page = 2; page <= totalPages; page++) {
+        // Sequential fetch keeps API pressure reasonable.
+        const res = await axios.get(`/api/admin/users?page=${page}&limit=${pageLimit}`);
+        const data = res.data ?? {};
+        const list = Array.isArray(data.users) ? data.users : Array.isArray(res.data) ? res.data : [];
+        allUsers.push(...list);
       }
+
+      setUsers(allUsers);
+      setTotalUsers(total || allUsers.length);
+      setCurrentPage(1);
     } catch (err) {
       setMessage({ type: "error", text: "Failed to load users" });
     }
@@ -217,17 +243,39 @@ export default function AdminDashboard() {
     load();
   }, []);
 
-  const filteredUsers = search.trim()
-    ? users.filter(
-        (u) =>
-          (u.displayName || "").toLowerCase().includes(search.toLowerCase()) ||
-          (u.username || "").toLowerCase().includes(search.toLowerCase())
-      )
-    : users;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filters.role, filters.classId, filters.yearLevel, filters.activeOnly]);
 
-  const pagination = { page: 1, perPage: 10 };
-  const start = (pagination.page - 1) * pagination.perPage;
-  const paginatedUsers = filteredUsers.slice(start, start + pagination.perPage);
+  const filteredUsers = users.filter((u) => {
+    const searchTrim = search.trim().toLowerCase();
+    const matchesSearch =
+      !searchTrim ||
+      (u.displayName || "").toLowerCase().includes(searchTrim) ||
+      (u.username || "").toLowerCase().includes(searchTrim);
+
+    const matchesRole = !filters.role || u.role === filters.role;
+
+    const classIdNum = filters.classId ? parseInt(filters.classId, 10) : null;
+    const matchesClass = !filters.classId || (u.classId ?? null) === classIdNum;
+
+    const matchesYear = !filters.yearLevel || (u.yearLevel ?? "") === filters.yearLevel;
+
+    const matchesActive =
+      !filters.activeOnly ||
+      u.isActive === 1 ||
+      u.isActive === true ||
+      u.isActive === null ||
+      u.isActive === undefined;
+
+    return matchesSearch && matchesRole && matchesClass && matchesYear && matchesActive;
+  });
+
+  const start = (currentPage - 1) * perPage;
+  const paginatedUsers = filteredUsers.slice(start, start + perPage);
+
+  const hasPrev = currentPage > 1;
+  const hasNext = start + perPage < filteredUsers.length;
 
   const openAddUser = () => {
     setFormUser({
@@ -306,13 +354,55 @@ export default function AdminDashboard() {
   };
 
   const handleDeactivate = async (u) => {
-    if (!window.confirm(`Deactivate ${u.displayName || u.username}?`)) return;
+    if (!window.confirm(`Remove ${u.displayName || u.username} from their class?`)) return;
     try {
-      await axios.put(`/api/admin/users/${u.id}`, { ...u, isActive: false });
+      // "Deactivate" in this UI means unassign from class(es), not account deactivation.
+      await axios.put(`/api/admin/users/${u.id}`, { classId: null });
       await fetchUsers();
-      setMessage({ type: "success", text: "User deactivated" });
+      setMessage({ type: "success", text: "Student removed from class" });
     } catch (err) {
       setMessage({ type: "error", text: err.response?.data?.error || "Failed to update" });
+    }
+  };
+
+  const escapeCSVCell = (value) => {
+    const str = value === null || value === undefined ? "" : String(value);
+    const needsQuotes = /[",\n\r]/.test(str);
+    if (!needsQuotes) return str;
+    return `"${str.replace(/"/g, '""')}"`;
+  };
+
+  const handleExport = () => {
+    try {
+      const headers = ["Name", "Username", "Role", "Class", "Year Level", "Last Login", "Active"];
+      const rows = filteredUsers.map((u) => [
+        u.displayName || u.username,
+        u.username,
+        u.role,
+        u.className ?? "—",
+        u.yearLevel ?? "—",
+        u.lastLogin ?? "—",
+        u.isActive === 1 || u.isActive === true ? "Yes" : u.isActive === 0 ? "No" : "—",
+      ]);
+
+      const csv = [headers, ...rows]
+        .map((r) => r.map(escapeCSVCell).join(","))
+        .join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "users-export.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      setMessage({ type: "success", text: `Exported ${filteredUsers.length} users` });
+    } catch (err) {
+      console.error("Export failed:", err);
+      setMessage({ type: "error", text: "Failed to export users" });
     }
   };
 
@@ -617,14 +707,89 @@ export default function AdminDashboard() {
                   <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
                     <h3 className="text-lg font-bold">User Management</h3>
                     <div className="flex gap-2">
-                      <button type="button" className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => setFilterOpen((v) => !v)}
+                        className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        aria-expanded={filterOpen}
+                      >
                         <span className="material-symbols-outlined text-[18px]">filter_list</span> Filter
                       </button>
-                      <button type="button" className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                      <button
+                        type="button"
+                        onClick={handleExport}
+                        className="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                      >
                         <span className="material-symbols-outlined text-[18px]">download</span> Export
                       </button>
                     </div>
                   </div>
+
+                  {filterOpen && (
+                    <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
+                      <div className="flex flex-wrap items-end gap-4">
+                        <div className="flex flex-col gap-1.5 min-w-[180px]">
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Role</label>
+                          <select
+                            value={filters.role}
+                            onChange={(e) => setFilters((p) => ({ ...p, role: e.target.value }))}
+                            className="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                          >
+                            <option value="">All roles</option>
+                            {ROLES.map((r) => (
+                              <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5 min-w-[200px]">
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Class</label>
+                          <select
+                            value={filters.classId}
+                            onChange={(e) => setFilters((p) => ({ ...p, classId: e.target.value }))}
+                            className="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                          >
+                            <option value="">All classes</option>
+                            {classes.map((c) => (
+                              <option key={c.id} value={String(c.id)}>{c.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5 min-w-[160px]">
+                          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Year level</label>
+                          <input
+                            type="text"
+                            value={filters.yearLevel}
+                            onChange={(e) => setFilters((p) => ({ ...p, yearLevel: e.target.value }))}
+                            placeholder="e.g. 7"
+                            className="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+
+                        <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200 pb-2">
+                          <input
+                            type="checkbox"
+                            checked={filters.activeOnly}
+                            onChange={(e) => setFilters((p) => ({ ...p, activeOnly: e.target.checked }))}
+                            className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 accent-primary"
+                          />
+                          Active only
+                        </label>
+
+                        <div className="flex-1" />
+
+                        <button
+                          type="button"
+                          onClick={() => setFilters({ role: "", classId: "", yearLevel: "", activeOnly: false })}
+                          className="pb-2 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                        >
+                          Clear filters
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase font-bold tracking-wider">
@@ -674,9 +839,16 @@ export default function AdminDashboard() {
                                   </button>
                                   {u.role !== "admin" && (
                                     <>
-                                      <button type="button" onClick={() => handleDeactivate(u)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded" title="Deactivate">
-                                        <span className="material-symbols-outlined text-[20px]">person_off</span>
-                                      </button>
+                                      {u.role === "student" && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeactivate(u)}
+                                          className="p-1.5 text-slate-400 hover:text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                          title="Remove from class"
+                                        >
+                                          <span className="material-symbols-outlined text-[20px]">person_off</span>
+                                        </button>
+                                      )}
                                       <button type="button" onClick={() => handleDeleteUser(u.id, u.username)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 rounded" title="Delete">
                                         <span className="material-symbols-outlined text-[20px]">delete</span>
                                       </button>
@@ -692,13 +864,23 @@ export default function AdminDashboard() {
                   </div>
                   <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <p className="text-xs text-slate-500 font-medium">
-                      Showing {filteredUsers.length === 0 ? 0 : start + 1}-{Math.min(start + pagination.perPage, filteredUsers.length)} of {filteredUsers.length} users
+                      Showing {filteredUsers.length === 0 ? 0 : start + 1}-{Math.min(start + perPage, filteredUsers.length)} of {filteredUsers.length} users
                     </p>
                     <div className="flex gap-2">
-                      <button type="button" disabled={start === 0} className="p-1.5 rounded border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 disabled:opacity-50">
+                      <button
+                        type="button"
+                        disabled={!hasPrev}
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        className="p-1.5 rounded border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+                      >
                         <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                       </button>
-                      <button type="button" disabled={start + pagination.perPage >= filteredUsers.length} className="p-1.5 rounded border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 disabled:opacity-50">
+                      <button
+                        type="button"
+                        disabled={!hasNext}
+                        onClick={() => setCurrentPage((p) => p + 1)}
+                        className="p-1.5 rounded border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+                      >
                         <span className="material-symbols-outlined text-[18px]">chevron_right</span>
                       </button>
                     </div>
