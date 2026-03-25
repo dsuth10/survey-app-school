@@ -113,6 +113,7 @@ export default function AdminDashboard() {
     activeOnly: false,
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const perPage = 25;
   const [message, setMessage] = useState({ type: "", text: "" });
   const [importing, setImporting] = useState(false);
@@ -245,7 +246,15 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, filters.role, filters.classId, filters.yearLevel, filters.activeOnly]);
+  }, [
+    search,
+    filters.role,
+    filters.classId,
+    filters.yearLevel,
+    filters.activeOnly,
+    sortConfig.key,
+    sortConfig.direction,
+  ]);
 
   const filteredUsers = users.filter((u) => {
     const searchTrim = search.trim().toLowerCase();
@@ -271,11 +280,70 @@ export default function AdminDashboard() {
     return matchesSearch && matchesRole && matchesClass && matchesYear && matchesActive;
   });
 
+  const sortedUsers = React.useMemo(() => {
+    if (!sortConfig.key) return filteredUsers;
+
+    const directionFactor = sortConfig.direction === "asc" ? 1 : -1;
+    const toText = (v) =>
+      v === null || v === undefined ? "" : String(v).toLowerCase();
+    const toTime = (v) => {
+      if (!v) return 0;
+      const t = new Date(v).getTime();
+      return Number.isFinite(t) ? t : 0;
+    };
+
+    const sorted = [...filteredUsers].sort((a, b) => {
+      if (sortConfig.key === "lastLogin") {
+        const av = toTime(a.lastLogin);
+        const bv = toTime(b.lastLogin);
+        if (av < bv) return -1 * directionFactor;
+        if (av > bv) return 1 * directionFactor;
+        return 0;
+      }
+
+      const aText =
+        sortConfig.key === "name"
+          ? toText(a.displayName || a.username)
+          : sortConfig.key === "role"
+            ? toText(a.role)
+            : sortConfig.key === "className"
+              ? toText(a.className)
+              : sortConfig.key === "yearLevel"
+                ? toText(a.yearLevel)
+                : toText(a[sortConfig.key]);
+      const bText =
+        sortConfig.key === "name"
+          ? toText(b.displayName || b.username)
+          : sortConfig.key === "role"
+            ? toText(b.role)
+            : sortConfig.key === "className"
+              ? toText(b.className)
+              : sortConfig.key === "yearLevel"
+                ? toText(b.yearLevel)
+                : toText(b[sortConfig.key]);
+
+      if (aText < bText) return -1 * directionFactor;
+      if (aText > bText) return 1 * directionFactor;
+      return 0;
+    });
+
+    return sorted;
+  }, [filteredUsers, sortConfig]);
+
   const start = (currentPage - 1) * perPage;
-  const paginatedUsers = filteredUsers.slice(start, start + perPage);
+  const paginatedUsers = sortedUsers.slice(start, start + perPage);
 
   const hasPrev = currentPage > 1;
-  const hasNext = start + perPage < filteredUsers.length;
+  const hasNext = start + perPage < sortedUsers.length;
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key !== key) return { key, direction: "asc" };
+      if (prev.direction === "asc") return { key, direction: "desc" };
+      // Third click clears sorting
+      return { key: null, direction: "asc" };
+    });
+  };
 
   const openAddUser = () => {
     setFormUser({
@@ -794,11 +862,146 @@ export default function AdminDashboard() {
                     <table className="w-full text-left">
                       <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase font-bold tracking-wider">
                         <tr>
-                          <th className="px-6 py-4">Name / Username</th>
-                          <th className="px-6 py-4">Role</th>
-                          <th className="px-6 py-4">Class</th>
-                          <th className="px-6 py-4">Year Level</th>
-                          <th className="px-6 py-4">Last Login</th>
+                          <th
+                            className="px-6 py-4 cursor-pointer select-none hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                            onClick={() => handleSort("name")}
+                            aria-sort={
+                              sortConfig.key === "name"
+                                ? sortConfig.direction === "asc"
+                                  ? "ascending"
+                                  : "descending"
+                                : "none"
+                            }
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Name / Username</span>
+                              <span
+                                className={`material-symbols-outlined text-[16px] ${
+                                  sortConfig.key === "name"
+                                    ? "text-primary"
+                                    : "text-slate-300 dark:text-slate-600"
+                                }`}
+                              >
+                                {sortConfig.key === "name" && sortConfig.direction === "desc"
+                                  ? "arrow_downward"
+                                  : sortConfig.key === "name"
+                                    ? "arrow_upward"
+                                    : "unfold_more"}
+                              </span>
+                            </div>
+                          </th>
+                          <th
+                            className="px-6 py-4 cursor-pointer select-none hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                            onClick={() => handleSort("role")}
+                            aria-sort={
+                              sortConfig.key === "role"
+                                ? sortConfig.direction === "asc"
+                                  ? "ascending"
+                                  : "descending"
+                                : "none"
+                            }
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Role</span>
+                              <span
+                                className={`material-symbols-outlined text-[16px] ${
+                                  sortConfig.key === "role"
+                                    ? "text-primary"
+                                    : "text-slate-300 dark:text-slate-600"
+                                }`}
+                              >
+                                {sortConfig.key === "role" && sortConfig.direction === "desc"
+                                  ? "arrow_downward"
+                                  : sortConfig.key === "role"
+                                    ? "arrow_upward"
+                                    : "unfold_more"}
+                              </span>
+                            </div>
+                          </th>
+                          <th
+                            className="px-6 py-4 cursor-pointer select-none hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                            onClick={() => handleSort("className")}
+                            aria-sort={
+                              sortConfig.key === "className"
+                                ? sortConfig.direction === "asc"
+                                  ? "ascending"
+                                  : "descending"
+                                : "none"
+                            }
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Class</span>
+                              <span
+                                className={`material-symbols-outlined text-[16px] ${
+                                  sortConfig.key === "className"
+                                    ? "text-primary"
+                                    : "text-slate-300 dark:text-slate-600"
+                                }`}
+                              >
+                                {sortConfig.key === "className" && sortConfig.direction === "desc"
+                                  ? "arrow_downward"
+                                  : sortConfig.key === "className"
+                                    ? "arrow_upward"
+                                    : "unfold_more"}
+                              </span>
+                            </div>
+                          </th>
+                          <th
+                            className="px-6 py-4 cursor-pointer select-none hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                            onClick={() => handleSort("yearLevel")}
+                            aria-sort={
+                              sortConfig.key === "yearLevel"
+                                ? sortConfig.direction === "asc"
+                                  ? "ascending"
+                                  : "descending"
+                                : "none"
+                            }
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Year Level</span>
+                              <span
+                                className={`material-symbols-outlined text-[16px] ${
+                                  sortConfig.key === "yearLevel"
+                                    ? "text-primary"
+                                    : "text-slate-300 dark:text-slate-600"
+                                }`}
+                              >
+                                {sortConfig.key === "yearLevel" && sortConfig.direction === "desc"
+                                  ? "arrow_downward"
+                                  : sortConfig.key === "yearLevel"
+                                    ? "arrow_upward"
+                                    : "unfold_more"}
+                              </span>
+                            </div>
+                          </th>
+                          <th
+                            className="px-6 py-4 cursor-pointer select-none hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                            onClick={() => handleSort("lastLogin")}
+                            aria-sort={
+                              sortConfig.key === "lastLogin"
+                                ? sortConfig.direction === "asc"
+                                  ? "ascending"
+                                  : "descending"
+                                : "none"
+                            }
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Last Login</span>
+                              <span
+                                className={`material-symbols-outlined text-[16px] ${
+                                  sortConfig.key === "lastLogin"
+                                    ? "text-primary"
+                                    : "text-slate-300 dark:text-slate-600"
+                                }`}
+                              >
+                                {sortConfig.key === "lastLogin" && sortConfig.direction === "desc"
+                                  ? "arrow_downward"
+                                  : sortConfig.key === "lastLogin"
+                                    ? "arrow_upward"
+                                    : "unfold_more"}
+                              </span>
+                            </div>
+                          </th>
                           <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                       </thead>
