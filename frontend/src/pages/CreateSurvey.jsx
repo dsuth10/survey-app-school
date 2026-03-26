@@ -38,11 +38,13 @@ export default function CreateSurvey() {
     { questionText: "", type: "multipleChoice", options: ["", ""], isRequired: true },
   ]);
   const [sharing, setSharing] = useState({
-    sharedWithClass: true,
+    sharedWithClass: false,
     sharedWithYearLevel: false,
     sharedWithSchool: false,
     targetUserIds: [],
   });
+  /** For students: whether their class allows sharing with class (from GET /api/classes/:id/permissions) */
+  const [classPermStatus, setClassPermStatus] = useState({ loading: false, canShareWithClass: null });
   const [targetClassId, setTargetClassId] = useState("");
   const [opensAt, setOpensAt] = useState(getLocalIsoString());
   const [closesAt, setClosesAt] = useState("");
@@ -66,6 +68,38 @@ export default function CreateSurvey() {
   useEffect(() => {
     axios.get("/api/surveys/assignable-students").then((res) => setAssignableStudents(Array.isArray(res.data) ? res.data : [])).catch(() => setAssignableStudents([]));
   }, [user?.id]);
+
+  // Teachers/admins: default "share with class" on (students default off — see plan)
+  useEffect(() => {
+    if (user?.role === "teacher" || user?.role === "admin") {
+      setSharing((prev) => ({ ...prev, sharedWithClass: true }));
+    }
+  }, [user?.role]);
+
+  // Students: load distribution permissions for their class so we can disable disallowed sharing
+  useEffect(() => {
+    if (user?.role !== "student" || !user?.classId) {
+      setClassPermStatus({ loading: false, canShareWithClass: null });
+      return;
+    }
+    setClassPermStatus({ loading: true, canShareWithClass: null });
+    axios
+      .get(`/api/classes/${user.classId}/permissions`)
+      .then((res) =>
+        setClassPermStatus({
+          loading: false,
+          canShareWithClass: !!res.data?.canShareWithClass,
+        })
+      )
+      .catch(() => setClassPermStatus({ loading: false, canShareWithClass: false }));
+  }, [user?.role, user?.classId]);
+
+  useEffect(() => {
+    if (user?.role !== "student" || classPermStatus.loading) return;
+    if (user?.classId && classPermStatus.canShareWithClass === false) {
+      setSharing((s) => ({ ...s, sharedWithClass: false }));
+    }
+  }, [user?.role, user?.classId, classPermStatus.loading, classPermStatus.canShareWithClass]);
 
   useEffect(() => {
     if (isEdit || surveyId) return;
@@ -244,6 +278,9 @@ export default function CreateSurvey() {
 
   const displayName = user?.displayName || user?.username || "User";
   const isStudent = user?.role === "student";
+  const classShareDisabled =
+    isStudent &&
+    (classPermStatus.loading || !user?.classId || !classPermStatus.canShareWithClass);
 
   if (loadingData) {
     return (
@@ -544,8 +581,14 @@ export default function CreateSurvey() {
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-medium text-slate-500">Share with</label>
                   <div className="flex flex-wrap gap-2 pt-1">
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input type="checkbox" checked={sharing.sharedWithClass} onChange={(e) => setSharing((s) => ({ ...s, sharedWithClass: e.target.checked }))} className="rounded text-primary focus:ring-primary" />
+                    <label className={`flex items-center gap-1.5 ${classShareDisabled ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}>
+                      <input
+                        type="checkbox"
+                        checked={sharing.sharedWithClass}
+                        disabled={classShareDisabled}
+                        onChange={(e) => setSharing((s) => ({ ...s, sharedWithClass: e.target.checked }))}
+                        className="rounded text-primary focus:ring-primary disabled:opacity-50"
+                      />
                       <span className="text-xs font-medium">Class</span>
                     </label>
                     {!isStudent && (
@@ -561,6 +604,15 @@ export default function CreateSurvey() {
                       </>
                     )}
                   </div>
+                  {isStudent && classPermStatus.loading && user?.classId && (
+                    <p className="text-xs text-slate-500 mt-1">Loading sharing permissions…</p>
+                  )}
+                  {isStudent && !classPermStatus.loading && !user?.classId && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">You are not assigned to a class. Ask a teacher to add you to a class to share with your class.</p>
+                  )}
+                  {isStudent && !classPermStatus.loading && user?.classId && classPermStatus.canShareWithClass === false && (
+                    <p className="text-xs text-slate-500 mt-1">Your teacher has not enabled &quot;share with class&quot; for your class. Use specific individuals or ask your teacher to allow it in Manage class.</p>
+                  )}
                 </div>
 
                 {assignableStudents.length > 0 && (

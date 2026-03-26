@@ -46,8 +46,8 @@ export default function BrowseSurveys() {
 
       {loading ? (
         <div className="grid gap-4">
-          {[1, 2, 3].map(_ => (
-            <Card key={i} className="w-full h-[150px] p-4">
+          {[1, 2, 3].map((n) => (
+            <Card key={n} className="w-full h-[150px] p-4">
               <Skeleton className="rounded-lg">
                 <div className="h-24 rounded-lg bg-default-300"></div>
               </Skeleton>

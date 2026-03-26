@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Card, CardHeader, CardBody, Divider, Button } from "@heroui/react";
+import { Card, CardHeader, CardBody, Divider } from "@heroui/react";
 import RadioQuestion from '../components/questions/RadioQuestion';
 import TrueFalseQuestion from '../components/questions/TrueFalseQuestion';
 import RankingQuestion from '../components/questions/RankingQuestion';
@@ -17,19 +17,35 @@ export default function TakeSurvey() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchSurvey();
-  }, [id, fetchSurvey]); // eslint-disable-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    setLoading(true);
+    setError('');
+    setSurvey(null);
+    setAnswers({});
 
-  const fetchSurvey = async () => {
-    try {
-      const response = await axios.get(`/api/surveys/${id}`);
-      setSurvey(response.data);
-    } catch (err) {
-      setError('Failed to fetch survey details');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const run = async () => {
+      try {
+        const response = await axios.get(`/api/surveys/${id}`);
+        if (!cancelled) {
+          const { survey: s, questions } = response.data;
+          setSurvey({ ...s, questions: questions || [] });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.response?.data?.error || 'Failed to load survey');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   const handleOptionChange = (questionId, option) => {
     setAnswers(prev => ({
@@ -51,7 +67,7 @@ export default function TakeSurvey() {
     setSubmitting(true);
     try {
       const formattedAnswers = Object.entries(answers).map(([qId, val]) => ({
-        questionId: parseInt(qId),
+        questionId: parseInt(qId, 10),
         selectedOption: val
       }));
 
